@@ -54,7 +54,7 @@ public class AuthService implements UserDetailsService {
     public AuthResponse login(AuthRequest request) {
         // In a real app, you'd use AuthenticationManager here.
         // For simplicity, we'll do it manually.
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
