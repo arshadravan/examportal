@@ -10,7 +10,7 @@ pipeline {
             steps {
                 sh 'docker stop authservice || true'
                 sh 'docker rm authservice || true'
-                sh 'docker run -d --name authservice -p 8080:8080 authservice'
+                sh 'docker run -d --name authservice -p 8081:8080 authservice'
             }
         }
     }
