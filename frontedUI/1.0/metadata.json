@@ -1,0 +1,5 @@
+{
+  "name": "ExamIntel",
+  "description": "High-end examination intelligence platform with advanced analytics, secure student gateway, and multi-channel authentication (Social, Email, Phone).",
+  "requestFramePermissions": ["camera", "microphone"]
+}
