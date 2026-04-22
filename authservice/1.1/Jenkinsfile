@@ -24,8 +24,8 @@ pipeline {
                 sh "docker rm ${params.SERVICE_NAME} || true"
                 sh """
                     docker run -d --name ${params.SERVICE_NAME} \
-                    -p 8081:8080 \
                     --network host \
+                    -e SERVER_PORT=8081 \
                     -e DB_URL=\$DB_URL \
                     -e DB_USERNAME=\$DB_USERNAME \
                     -e DB_PASSWORD=\$DB_PASSWORD \
