@@ -2,7 +2,8 @@
  * API Service for local testing and production
  */
 
-const AUTH_API_URL = 'http://localhost:8080/api/auth';
+//const AUTH_API_URL = 'http://localhost:8080/api/auth';
+const AUTH_API_URL = 'http://15.206.168.236:8081/api/auth';
 const API_BASE_URL = '/api';
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
