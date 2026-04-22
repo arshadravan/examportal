@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'SERVICE_NAME', defaultValue: '', description: 'Service name')
+        string(name: 'VERSION', defaultValue: '', description: 'Version to deploy')
+    }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${params.SERVICE_NAME}:${params.VERSION} ./${params.SERVICE_NAME}/${params.VERSION}/"
+            }
+        }
+        stage('Run Container') {
+            steps {
+                sh "docker stop ${params.SERVICE_NAME} || true"
+                sh "docker rm ${params.SERVICE_NAME} || true"
+                sh """
+                    docker run -d --name ${params.SERVICE_NAME} \
+                    -p 3000:3000 \
+                    ${params.SERVICE_NAME}:${params.VERSION}
+                """
+            }
+        }
+    }
+}
