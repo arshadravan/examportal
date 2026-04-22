@@ -7,17 +7,17 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${params.SERVICE_NAME}:${params.VERSION} ./${params.SERVICE_NAME}/${params.VERSION}/"
+                sh "docker build -t ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION} ./${params.SERVICE_NAME}/${params.VERSION}/"
             }
         }
         stage('Run Container') {
             steps {
-                sh "docker stop ${params.SERVICE_NAME} || true"
-                sh "docker rm ${params.SERVICE_NAME} || true"
+                sh "docker stop ${params.SERVICE_NAME.toLowerCase()} || true"
+                sh "docker rm ${params.SERVICE_NAME.toLowerCase()} || true"
                 sh """
-                    docker run -d --name ${params.SERVICE_NAME} \
+                    docker run -d --name ${params.SERVICE_NAME.toLowerCase()} \
                     -p 3000:3000 \
-                    ${params.SERVICE_NAME}:${params.VERSION}
+                    ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION}
                 """
             }
         }
