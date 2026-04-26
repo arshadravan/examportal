@@ -38,7 +38,7 @@ pipeline {
                             -e JWT_SECRET=\$JWT_SECRET \
                             -e JWT_EXPIRATION=\$JWT_EXPIRATION \
                             -e KAFKA_BOOTSTRAP_SERVERS=\$KAFKA_BOOTSTRAP_SERVERS \
-                            -e SPRING_REDIS_HOST=\$REDIS_HOST \
+                            -e REDIS_HOST=\$REDIS_HOST \
                             ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION}
                         """
                     } else if (params.SERVICE_NAME.toLowerCase() == 'notification') {
