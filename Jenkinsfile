@@ -26,7 +26,8 @@ pipeline {
                     if (params.SERVICE_NAME.toLowerCase() == 'authservice') {
                         sh """
                             docker run -d --name ${params.SERVICE_NAME.toLowerCase()} \
-                            --network host \
+                            --network ubuntu_default \
+                            -p 8081:8081 \
                             -e SERVER_PORT=8081 \
                             -e DB_URL=\$DB_URL \
                             -e DB_USERNAME=\$DB_USERNAME \
