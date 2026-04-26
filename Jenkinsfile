@@ -15,6 +15,13 @@ pipeline {
         MAIL_PASSWORD = credentials('MAIL_PASSWORD')
     }
     stages {
+        stage('Build JAR') {
+            steps {
+                withMaven(maven: 'Maven') {
+                    sh "cd ./${params.SERVICE_NAME}/${params.VERSION} && mvn clean package -DskipTests"
+                }
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION} ./${params.SERVICE_NAME}/${params.VERSION}/"
