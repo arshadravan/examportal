@@ -22,10 +22,14 @@ public class OtpService {
 
     public void generateAndSendOtp(String email, User user) {
         try {
-            // User data Redis mein save karo
             String userJson = objectMapper.writeValueAsString(user);
             redisTemplate.opsForValue().set("pending:user:" + email, userJson, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
         } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("REDIS ERROR DETAILS: " + e.getClass().getName() + " - " + e.getMessage());
+            if (e.getCause() != null) {
+                System.out.println("REDIS ROOT CAUSE: " + e.getCause().getMessage());
+            }
             throw new RuntimeException("User data save karne mein error: " + e.getMessage());
         }
         generateOtp(email, "otp:", "otp:resend:count:", "otp-email-topic");
@@ -47,6 +51,7 @@ public class OtpService {
             redisTemplate.delete("pending:user:" + email);
             return user;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("User data load karne mein error: " + e.getMessage());
         }
     }
