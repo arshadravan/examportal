@@ -17,7 +17,9 @@ pipeline {
     stages {
         stage('Build JAR') {
             steps {
-                sh "cd ./${params.SERVICE_NAME}/${params.VERSION} && mvn clean package -DskipTests"
+                withMaven(maven: 'Maven') {
+                    sh "cd ./${params.SERVICE_NAME}/${params.VERSION} && mvn clean package -DskipTests"
+                }
             }
         }
         stage('Build Docker Image') {
