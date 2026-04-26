@@ -11,6 +11,8 @@ pipeline {
         JWT_SECRET = credentials('JWT_SECRET')
         JWT_EXPIRATION = credentials('JWT_EXPIRATION')
         KAFKA_BOOTSTRAP_SERVERS = credentials('KAFKA_BOOTSTRAP_SERVERS')
+        MAIL_USERNAME = credentials('MAIL_USERNAME')
+        MAIL_PASSWORD = credentials('MAIL_PASSWORD')
     }
     stages {
         stage('Build Docker Image') {
@@ -35,6 +37,17 @@ pipeline {
                             -e JWT_SECRET=\$JWT_SECRET \
                             -e JWT_EXPIRATION=\$JWT_EXPIRATION \
                             -e KAFKA_BOOTSTRAP_SERVERS=\$KAFKA_BOOTSTRAP_SERVERS \
+                            ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION}
+                        """
+                    } else if (params.SERVICE_NAME.toLowerCase() == 'notification') {
+                        sh """
+                            docker run -d --name ${params.SERVICE_NAME.toLowerCase()} \
+                            --network ubuntu_default \
+                            -p 8082:8082 \
+                            -e SERVER_PORT=8082 \
+                            -e KAFKA_BOOTSTRAP_SERVERS=\$KAFKA_BOOTSTRAP_SERVERS \
+                            -e MAIL_USERNAME=\$MAIL_USERNAME \
+                            -e MAIL_PASSWORD=\$MAIL_PASSWORD \
                             ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION}
                         """
                     } else {
