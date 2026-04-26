@@ -13,16 +13,9 @@ pipeline {
         KAFKA_BOOTSTRAP_SERVERS = credentials('KAFKA_BOOTSTRAP_SERVERS')
         MAIL_USERNAME = credentials('MAIL_USERNAME')
         MAIL_PASSWORD = credentials('MAIL_PASSWORD')
-    }
-    tools {
-        maven 'Maven'
+        REDIS_HOST = credentials('REDIS_HOST')
     }
     stages {
-        stage('Build JAR') {
-            steps {
-                sh "cd ./${params.SERVICE_NAME}/${params.VERSION} && mvn clean package -DskipTests"
-            }
-        }
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION} ./${params.SERVICE_NAME}/${params.VERSION}/"
@@ -45,6 +38,7 @@ pipeline {
                             -e JWT_SECRET=\$JWT_SECRET \
                             -e JWT_EXPIRATION=\$JWT_EXPIRATION \
                             -e KAFKA_BOOTSTRAP_SERVERS=\$KAFKA_BOOTSTRAP_SERVERS \
+                            -e REDIS_HOST=\$REDIS_HOST \
                             ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION}
                         """
                     } else if (params.SERVICE_NAME.toLowerCase() == 'notification') {
