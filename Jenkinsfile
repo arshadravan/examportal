@@ -14,12 +14,13 @@ pipeline {
         MAIL_USERNAME = credentials('MAIL_USERNAME')
         MAIL_PASSWORD = credentials('MAIL_PASSWORD')
     }
+    tools {
+        maven 'Maven'
+    }
     stages {
         stage('Build JAR') {
             steps {
-                withMaven(maven: 'Maven') {
-                    sh "cd ./${params.SERVICE_NAME}/${params.VERSION} && mvn clean package -DskipTests"
-                }
+                sh "cd ./${params.SERVICE_NAME}/${params.VERSION} && mvn clean package -DskipTests"
             }
         }
         stage('Build Docker Image') {
