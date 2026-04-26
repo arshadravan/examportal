@@ -1,5 +1,4 @@
 package com.examportal.authservice.controller;
-
 import com.examportal.authservice.dto.AuthRequest;
 import com.examportal.authservice.dto.AuthResponse;
 import com.examportal.authservice.entity.User;
@@ -35,9 +34,8 @@ public class AuthController {
 
         otpService.verifyOtp(email, otp);
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+        // Redis se user lo aur DB mein save karo
+        User user = otpService.getPendingUser(email);
         user.setVerified(true);
         userRepository.save(user);
 
@@ -47,7 +45,9 @@ public class AuthController {
     @PostMapping("/resend-otp")
     public ResponseEntity<String> resendOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
-        otpService.generateAndSendOtp(email);
+        // User Redis se lo
+        User user = otpService.getPendingUser(email);
+        otpService.generateAndSendOtp(email, user);
         return ResponseEntity.ok("Naya OTP bhej diya: " + email);
     }
 

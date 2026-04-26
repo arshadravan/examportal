@@ -41,8 +41,8 @@ public class AuthService implements UserDetailsService {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setVerified(false);
-        userRepository.save(user);
-        otpService.generateAndSendOtp(user.getEmail());
+        // DB mein save nahi karte — OTP verify hone ke baad save hoga
+        otpService.generateAndSendOtp(user.getEmail(), user);
         return "Registration successful. Please verify your email with the OTP sent.";
     }
 
@@ -69,35 +69,25 @@ public class AuthService implements UserDetailsService {
                 .build();
     }
 
-    // ✅ Step 1 — Email check karo, OTP bhejo
     public String forgotPassword(String email) {
         userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("No account found with this email."));
-
         otpService.generateAndSendForgotPasswordOtp(email);
         return "OTP sent to your email.";
     }
 
-    // ✅ Step 2 — OTP verify karo
     public String verifyForgotOtp(String email, String otp) {
         otpService.verifyForgotOtp(email, otp);
         return "OTP verified. You can now reset your password.";
     }
 
-    // ✅ Step 3 — Password reset karo
     public String resetPassword(String email, String otp, String newPassword) {
-        // Dobara OTP verify — security ke liye
         otpService.verifyForgotOtp(email, otp);
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found."));
-
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-
-        // OTP Redis se clean karo
         otpService.deleteForgotOtp(email);
-
         return "Password reset successful. Please login.";
     }
 }

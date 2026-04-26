@@ -1,5 +1,7 @@
 package com.examportal.authservice.service;
 
+import com.examportal.authservice.entity.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,44 +15,54 @@ public class OtpService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     private static final long OTP_EXPIRY_MINUTES = 10;
     private static final int MAX_RESEND_LIMIT = 3;
 
-    // ✅ Signup OTP — same as before
-    public void generateAndSendOtp(String email) {
+    public void generateAndSendOtp(String email, User user) {
+        try {
+            // User data Redis mein save karo
+            String userJson = objectMapper.writeValueAsString(user);
+            redisTemplate.opsForValue().set("pending:user:" + email, userJson, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            throw new RuntimeException("User data save karne mein error: " + e.getMessage());
+        }
         generateOtp(email, "otp:", "otp:resend:count:", "otp-email-topic");
     }
 
-    // ✅ Forgot Password OTP — alag Redis keys, alag Kafka topic
     public void generateAndSendForgotPasswordOtp(String email) {
         generateOtp(email, "forgot:otp:", "forgot:otp:resend:count:", "forgot-password-otp-topic");
     }
 
-    // ✅ Signup OTP verify
     public boolean verifyOtp(String email, String otp) {
         return verifyOtpInternal(email, otp, "otp:");
     }
 
-    // ✅ Forgot Password OTP verify — delete nahi karta (resetPassword mein dobara verify hoga)
+    public User getPendingUser(String email) {
+        try {
+            String userJson = redisTemplate.opsForValue().get("pending:user:" + email);
+            if (userJson == null) throw new RuntimeException("Registration expired. Please register again.");
+            User user = objectMapper.readValue(userJson, User.class);
+            redisTemplate.delete("pending:user:" + email);
+            return user;
+        } catch (Exception e) {
+            throw new RuntimeException("User data load karne mein error: " + e.getMessage());
+        }
+    }
+
     public boolean verifyForgotOtp(String email, String otp) {
         String otpKey = "forgot:otp:" + email;
         String savedOtp = redisTemplate.opsForValue().get(otpKey);
-
         if (savedOtp == null) throw new RuntimeException("OTP expired. Please request a new one.");
         if (!savedOtp.equals(otp)) throw new RuntimeException("Invalid OTP.");
-
-        // Delete nahi kar rahe — resetPassword mein dobara validate hoga
         return true;
     }
 
-    // ✅ Reset ke baad OTP delete karo
     public void deleteForgotOtp(String email) {
         redisTemplate.delete("forgot:otp:" + email);
         redisTemplate.delete("forgot:otp:resend:count:" + email);
     }
-
-    // ─── Private Helpers ───────────────────────────────────────────
 
     private void generateOtp(String email, String otpPrefix, String resendPrefix, String topic) {
         String resendKey = resendPrefix + email;
@@ -85,10 +97,8 @@ public class OtpService {
     private boolean verifyOtpInternal(String email, String otp, String prefix) {
         String otpKey = prefix + email;
         String savedOtp = redisTemplate.opsForValue().get(otpKey);
-
         if (savedOtp == null) throw new RuntimeException("OTP expired. Please request a new one.");
         if (!savedOtp.equals(otp)) throw new RuntimeException("Invalid OTP.");
-
         redisTemplate.delete(otpKey);
         return true;
     }
