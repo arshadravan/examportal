@@ -5,15 +5,15 @@ pipeline {
         string(name: 'VERSION', defaultValue: '', description: 'Version to deploy')
     }
     environment {
-        DB_URL = credentials('DB_URL')
-        DB_USERNAME = credentials('DB_USERNAME')
-        DB_PASSWORD = credentials('DB_PASSWORD')
-        JWT_SECRET = credentials('JWT_SECRET')
-        JWT_EXPIRATION = credentials('JWT_EXPIRATION')
+        DB_URL                  = credentials('DB_URL')
+        DB_USERNAME             = credentials('DB_USERNAME')
+        DB_PASSWORD             = credentials('DB_PASSWORD')
+        JWT_SECRET              = credentials('JWT_SECRET')
+        JWT_EXPIRATION          = credentials('JWT_EXPIRATION')
         KAFKA_BOOTSTRAP_SERVERS = credentials('KAFKA_BOOTSTRAP_SERVERS')
-        MAIL_USERNAME = credentials('MAIL_USERNAME')
-        MAIL_PASSWORD = credentials('MAIL_PASSWORD')
-        REDIS_HOST = credentials('REDIS_HOST')
+        MAIL_USERNAME           = credentials('MAIL_USERNAME')
+        MAIL_PASSWORD           = credentials('MAIL_PASSWORD')
+        REDIS_HOST              = credentials('REDIS_HOST')
     }
     stages {
         stage('Build Docker Image') {
@@ -31,6 +31,7 @@ pipeline {
                             docker run -d --name ${params.SERVICE_NAME.toLowerCase()} \
                             --network ubuntu_default \
                             -p 8081:8081 \
+                            -e SPRING_PROFILES_ACTIVE=prod \
                             -e SERVER_PORT=8081 \
                             -e DB_URL=\$DB_URL \
                             -e DB_USERNAME=\$DB_USERNAME \
@@ -39,7 +40,6 @@ pipeline {
                             -e JWT_EXPIRATION=\$JWT_EXPIRATION \
                             -e KAFKA_BOOTSTRAP_SERVERS=\$KAFKA_BOOTSTRAP_SERVERS \
                             -e REDIS_HOST=\$REDIS_HOST \
-                            -e SPRING_REDIS_HOST=redis \
                             ${params.SERVICE_NAME.toLowerCase()}:${params.VERSION}
                         """
                     } else if (params.SERVICE_NAME.toLowerCase() == 'notification') {
@@ -47,6 +47,7 @@ pipeline {
                             docker run -d --name ${params.SERVICE_NAME.toLowerCase()} \
                             --network ubuntu_default \
                             -p 8082:8082 \
+                            -e SPRING_PROFILES_ACTIVE=prod \
                             -e SERVER_PORT=8082 \
                             -e KAFKA_BOOTSTRAP_SERVERS=\$KAFKA_BOOTSTRAP_SERVERS \
                             -e MAIL_USERNAME=\$MAIL_USERNAME \
